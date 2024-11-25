@@ -36,4 +36,10 @@ class MockConnector(object):
         for key in keys:
             self.delete(db_id, key)
 
+    def hmset(self, db_id, key, data_input):
+        if key in self.data:
+            self.data[key].update(data_input)
+        else:
+            self.data[key] = data_input
+
 
