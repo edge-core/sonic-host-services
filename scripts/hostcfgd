@@ -1313,9 +1313,11 @@ class MgmtIfaceCfg(object):
 
         # Restart related vrfs services
         try:
-            run_cmd(['service', 'ntp', 'stop'], True, True)
+            run_cmd(['service', 'ntp-config', 'stop'], True, True)
+            run_cmd(['service', 'rsyslog-config', 'stop'], True, True)
             run_cmd(['systemctl', 'restart', 'interfaces-config'], True, True)
-            run_cmd(['service', 'ntp', 'start'], True, True)
+            run_cmd(['service', 'ntp-config', 'start'], True, True)
+            run_cmd(['service', 'rsyslog-config', 'start'], True, True)
         except subprocess.CalledProcessError:
             syslog.syslog(syslog.LOG_ERR, f'Failed to restart management vrf '
                           'services')

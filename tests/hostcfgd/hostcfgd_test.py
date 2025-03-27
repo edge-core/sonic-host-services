@@ -271,9 +271,11 @@ class TestHostcfgdDaemon(TestCase):
                 expected = [
                     call(['sudo', 'systemctl', 'restart', 'interfaces-config']),
                     call(['sudo', 'systemctl', 'restart', 'ntp-config']),
-                    call(['service', 'ntp', 'stop']),
+                    call(['service', 'ntp-config', 'stop']),
+                    call(['service', 'rsyslog-config', 'stop']),
                     call(['systemctl', 'restart', 'interfaces-config']),
-                    call(['service', 'ntp', 'start']),
+                    call(['service', 'ntp-config', 'start']),
+                    call(['service', 'rsyslog-config', 'start']),
                     call(['ip', '-4', 'route', 'del', 'default', 'dev', 'eth0', 'metric', '202'])
                 ]
                 mocked_subprocess.check_call.assert_has_calls(expected)
