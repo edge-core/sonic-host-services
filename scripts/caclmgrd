@@ -46,7 +46,7 @@ def _ip_prefix_in_key(key):
 
 
 def get_ipv4_networks_from_interface_table(table, intf_name):
-    
+
     addresses = []
     if table:
         for key, _ in table.items():
@@ -173,7 +173,7 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
             self.lock[back_asic_namespace] = threading.Lock()
             self.num_changes[back_asic_namespace] = 0
             self.update_docker_mgmt_ip_acl(back_asic_namespace)
-       
+
         for fabric_asic_namespace in namespaces['fabric_ns']:
             self.update_thread[fabric_asic_namespace] = None
             self.lock[fabric_asic_namespace] = threading.Lock()
@@ -403,9 +403,9 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
                 self.log_warning("Vlan IP not available from DualToR active-active config")
                 return fwd_dualtor_grpc_traffic_from_host_to_soc_cmds
 
-            fwd_dualtor_grpc_traffic_from_host_to_soc_cmds.append(self.iptables_cmd_ns_prefix[namespace] + 
+            fwd_dualtor_grpc_traffic_from_host_to_soc_cmds.append(self.iptables_cmd_ns_prefix[namespace] +
                     ['iptables', '-t', 'nat', '--flush', 'POSTROUTING'])
-            
+
             if loopback_address is not None:
                 mux_table = config_db_connector.get_table(self.CONFIG_MUX_CABLE)
                 mux_table_keys = mux_table.keys()
@@ -418,7 +418,7 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
                             # Only add the vlan source IP specific soc IP address to IPtables
                             if soc_ipv4_addr in ip_network:
                                 vlan_address = ip_network.network_address
-                                fwd_dualtor_grpc_traffic_from_host_to_soc_cmds.append(self.iptables_cmd_ns_prefix[namespace] + 
+                                fwd_dualtor_grpc_traffic_from_host_to_soc_cmds.append(self.iptables_cmd_ns_prefix[namespace] +
                                          ['iptables', '-t', 'nat', '-A', 'POSTROUTING', '--destination', str(soc_ipv4_addr), '--source', str(vlan_address), '-j', 'SNAT', '--to-source', str(loopback_address)])
 
         return fwd_dualtor_grpc_traffic_from_host_to_soc_cmds
@@ -427,7 +427,7 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
     def generate_fwd_traffic_from_namespace_to_host_commands(self, namespace, acl_source_ip_map):
         """
         The below SNAT and DNAT rules are added in asic namespace in multi-ASIC platforms. It helps to forward request coming
-        in through the front panel interfaces created/present in the asic namespace for the servie running in linux host network namespace. 
+        in through the front panel interfaces created/present in the asic namespace for the servie running in linux host network namespace.
         The external IP addresses are NATed to the internal docker IP addresses for the Host service to respond.
         """
 
@@ -651,6 +651,15 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
         iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['iptables', '-A', 'INPUT', '-p', 'udp', '--dport', '546:547', '-j', 'ACCEPT'])
         iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['ip6tables', '-A', 'INPUT', '-p', 'udp', '--dport', '546:547', '-j', 'ACCEPT'])
 
+        # Add iptables/ip6tables commands to allow all incoming BFD traffic
+        # TODO: Determine BFD ACLs based on configured device sessions, and remove this blanket acceptance
+        iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['iptables', '-A', 'INPUT', '-p', 'udp', '--sport', '49152:65535', '--dport', '3784', '-j', 'ACCEPT'])
+        iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['iptables', '-A', 'INPUT', '-p', 'udp', '--dport', '3785', '-j', 'ACCEPT'])
+        iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['iptables', '-A', 'INPUT', '-p', 'udp', '--sport', '49152:65535', '--dport', '4784', '-j', 'ACCEPT'])
+        iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['ip6tables', '-A', 'INPUT', '-p', 'udp', '--sport', '49152:65535', '--dport', '3784', '-j', 'ACCEPT'])
+        iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['ip6tables', '-A', 'INPUT', '-p', 'udp', '--dport', '3785', '-j', 'ACCEPT'])
+        iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['ip6tables', '-A', 'INPUT', '-p', 'udp', '--sport', '49152:65535', '--dport', '4784', '-j', 'ACCEPT'])
+
         # Add iptables/ip6tables commands to allow all incoming BGP traffic
         # TODO: Determine BGP ACLs based on configured device sessions, and remove this blanket acceptance
         iptables_cmds.append(self.iptables_cmd_ns_prefix[namespace] + ['iptables', '-A', 'INPUT', '-p', 'tcp', '--dport', '179', '-j', 'ACCEPT'])
@@ -771,7 +780,7 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
                             rule_cmd += ["-A", "INPUT"]
                             if ip_protocol != "any":
                                 rule_cmd += ["-p", str(ip_protocol)]
- 
+
                             if "SRC_IPV6" in rule_props and rule_props["SRC_IPV6"]:
                                 rule_cmd += ["-s", str(rule_props["SRC_IPV6"])]
                                 if rule_props["PACKET_ACTION"] == "ACCEPT":
@@ -843,9 +852,9 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
 
     def update_control_plane_nat_acls(self, namespace, service_to_source_ip_map, config_db_connector):
         """
-        Convenience wrapper for multi-asic platforms 
+        Convenience wrapper for multi-asic platforms
         which programs the NAT rules for redirecting the
-        traffic coming on the front panel interface map to namespace 
+        traffic coming on the front panel interface map to namespace
         to the host.
         """
         # Add iptables commands to allow front panel traffic
@@ -974,7 +983,7 @@ class ControlPlaneAclManager(daemon_base.DaemonBase):
         # Initlaize Global config that loads all database*.json
         if device_info.is_multi_npu():
             swsscommon.SonicDBConfig.initializeGlobalConfig()
-        
+
         # Create the Select object
         sel = swsscommon.Select()
 
