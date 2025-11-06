@@ -46,7 +46,9 @@ setup(
         'dbus-python',
         'systemd-python',
         'Jinja2>=2.10',
-        'PyGObject==3.50.0',
+        'PyGObject==3.38.0',
+        'pycairo==1.18.1',
+        'psutil'
     ] + sonic_dependencies,
     setup_requires = [
         'pytest-runner',
