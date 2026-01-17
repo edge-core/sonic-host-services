@@ -9,6 +9,7 @@ After=sonic.target
 Type=simple
 ExecStart=/usr/local/bin/procdockerstatsd
 Restart=always
+TimeoutStopSec=10s
 
 [Install]
 WantedBy=sonic.target
